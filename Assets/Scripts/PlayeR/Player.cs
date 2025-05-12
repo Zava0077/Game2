@@ -23,9 +23,14 @@ public class Player : Entity
                 int nextY = GridPosition.y + (int)Input.GetAxisRaw("Vertical");
                 TryDisplace(new Vector2Int(nextX, nextY));
             }
+            if (Input.GetMouseButton(0))
+            {
+                Vector2 dir = MaxContrast((_main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized);
+                TryDisplace(new Vector2Int(GridPosition.x + (int)dir.x, GridPosition.y + (int)dir.y));
+            }
         }
     }
-    private void TryDisplace(Vector2Int toWhere)
+    public void TryDisplace(Vector2Int toWhere)
     {
         int nextX = toWhere.x;
         int nextY = toWhere.y;
@@ -35,10 +40,10 @@ public class Player : Entity
                 SquareCreator.map[nextX, nextY].currentEntity.Interact();
             return;
         }
-        transform.position += new Vector3((float)Input.GetAxisRaw("Horizontal") * MOVE_DISPLACEMENT, (float)Input.GetAxisRaw("Vertical") * MOVE_DISPLACEMENT, 0f);
+        transform.position = new Vector3(nextX * MOVE_DISPLACEMENT, nextY * MOVE_DISPLACEMENT, 0f);
         SquareCreator.map[GridPosition.x, GridPosition.y].currentEntity = null;
-        GridPosition.x += (int)Input.GetAxisRaw("Horizontal");
-        GridPosition.y += (int)Input.GetAxisRaw("Vertical");
+        GridPosition.x = nextX;
+        GridPosition.y = nextY;
         SquareCreator.map[GridPosition.x, GridPosition.y].currentEntity = this;
         StartCoroutine(LerpCamera(transform.position));
     }
@@ -69,5 +74,12 @@ public class Player : Entity
     public override void Interact()
     {
         throw new System.NotImplementedException();
+    }
+    private Vector2 MaxContrast(Vector2 vec)
+    {
+        if (vec.x == vec.y) return Vector2.zero;
+        if (Mathf.Abs(vec.x) > Mathf.Abs(vec.y))
+            return new Vector2(vec.x > 0 ? 1 : -1, 0);
+        return new Vector2(0, vec.y > 0 ? 1 : -1);
     }
 }
