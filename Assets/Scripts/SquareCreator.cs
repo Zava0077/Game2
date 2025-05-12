@@ -16,8 +16,8 @@ public class SquareCreator : MonoBehaviour
     [SerializeField] private Sprite _heroSprite;
     public static Cell[,] map = new Cell[MAP_WIDTH, MAP_HEIGHT]; 
     private Tilemap _tm;
-    public const int MAP_WIDTH = 10;
-    public const int MAP_HEIGHT = 10;
+    public const int MAP_WIDTH = 64;
+    public const int MAP_HEIGHT = 64;
     private void Start()
     {
         CreateTilemap();

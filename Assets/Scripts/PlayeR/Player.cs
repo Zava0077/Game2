@@ -7,6 +7,7 @@ public class Player : Entity
     private Camera _main;
     private const float MOVE_CD = 0.5f;
     private const float MOVE_DISPLACEMENT = 0.8f;
+
     private void Awake()
     {
         StartCoroutine(Move());
@@ -23,11 +24,12 @@ public class Player : Entity
                 int nextY = GridPosition.y + (int)Input.GetAxisRaw("Vertical");
                 TryDisplace(new Vector2Int(nextX, nextY));
             }
-            if (Input.GetMouseButton(0))
+            else if (Input.GetMouseButton(0))
             {
                 Vector2 dir = MaxContrast((_main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized);
                 TryDisplace(new Vector2Int(GridPosition.x + (int)dir.x, GridPosition.y + (int)dir.y));
             }
+            //event invoke 
         }
     }
     public void TryDisplace(Vector2Int toWhere)
