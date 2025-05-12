@@ -1,14 +1,73 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : Entity
 {
-
-    // Update is called once per frame
-    void Update()
+    private Camera _main;
+    private const float MOVE_CD = 0.5f;
+    private const float MOVE_DISPLACEMENT = 0.8f;
+    private void Awake()
     {
-        if(Input.GetAxisRaw("Horizontal")!= 0)
+        StartCoroutine(Move());
+        _main = Camera.main;
+    }
+    private IEnumerator Move()
+    {
+        while(this)
         {
-            this.transform.position += new Vector3((float)Input.GetAxisRaw("Horizontal") * 0.16f, 0f, 0f);
+            yield return new WaitForSeconds(MOVE_CD);
+            if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
+            {
+                int nextX = GridPosition.x + (int)Input.GetAxisRaw("Horizontal");
+                int nextY = GridPosition.y + (int)Input.GetAxisRaw("Vertical");
+                TryDisplace(new Vector2Int(nextX, nextY));
+            }
         }
+    }
+    private void TryDisplace(Vector2Int toWhere)
+    {
+        int nextX = toWhere.x;
+        int nextY = toWhere.y;
+        if (!CheckPlace(nextX, nextY, out int error))
+        {
+            if (error != -1)
+                SquareCreator.map[nextX, nextY].currentEntity.Interact();
+            return;
+        }
+        transform.position += new Vector3((float)Input.GetAxisRaw("Horizontal") * MOVE_DISPLACEMENT, (float)Input.GetAxisRaw("Vertical") * MOVE_DISPLACEMENT, 0f);
+        SquareCreator.map[GridPosition.x, GridPosition.y].currentEntity = null;
+        GridPosition.x += (int)Input.GetAxisRaw("Horizontal");
+        GridPosition.y += (int)Input.GetAxisRaw("Vertical");
+        SquareCreator.map[GridPosition.x, GridPosition.y].currentEntity = this;
+        StartCoroutine(LerpCamera(transform.position));
+    }
+    private IEnumerator LerpCamera(Vector2 where)
+    {
+        float currentStep = 0f;
+        Vector3 dir = where - (Vector2)_main.transform.position;
+        while(currentStep < MOVE_CD)
+        {
+            yield return new WaitForSeconds(MOVE_CD / 5);
+            currentStep += MOVE_CD / 5;
+            _main.transform.position += dir / 5;
+        }
+        yield break;
+    }
+    private bool CheckPlace(int x, int y, out int error)
+    {
+        if (x < 0 || y < 0 || y >= SquareCreator.MAP_HEIGHT || x >= SquareCreator.MAP_WIDTH)
+        {
+            error = -1;
+            return false;
+        }
+        error = 0;
+        return true;
+    }
+    private bool CheckPlace(int x, int y) =>
+        CheckPlace(x, y, out int error);
+    public override void Interact()
+    {
+        throw new System.NotImplementedException();
     }
 }

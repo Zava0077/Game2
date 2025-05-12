@@ -3,13 +3,17 @@ using UnityEngine;
 
 public class Cell : MonoBehaviour
 {
-    public Vector2Int GridPosition;
-    public Entity CurrentEntity;
-
-
+    public Cell(int x, int y)
+    {
+        GridPosition = new Vector2Int(x, y);
+    }
+    public Cell(Vector2Int pos) : this(pos.x, pos.y) { }
+    public Vector2Int GridPosition { get; private set; }
+    public Entity currentEntity;
     public void Place(Entity entity)
     {
-        CurrentEntity = entity;
-        entity.transform.position = this.transform.position;
+        currentEntity = entity;
+        entity.GridPosition = GridPosition;
+        entity.transform.position = (Vector3Int)GridPosition;
     }
 }

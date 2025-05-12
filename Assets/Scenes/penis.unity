@@ -257,6 +257,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _tb: {fileID: 11400000, guid: 66c22549fd2f49c42b4998a7f55dbc19, type: 2}
+  _heroSprite: {fileID: 3598024242438813033, guid: 5e6348dec26c945489aa247e9dbc8eba, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
