@@ -8,6 +8,12 @@ using UnityEngine.Tilemaps;
 /// </summary>
 public class SquareCreator : MonoBehaviour 
 {
+    public const int MAP_WIDTH = 64;
+    public const int MAP_HEIGHT = 64;
+    private const float CELL_WIDTH = 0.8f;
+    public static Cell[,] map = new Cell[MAP_WIDTH, MAP_HEIGHT]; 
+    [SerializeField] private TileBase _tb; //
+    public static Tilemap WalkableMap { get; private set; }
     public enum RenderLevels
     {
         Effects,
@@ -15,17 +21,15 @@ public class SquareCreator : MonoBehaviour
         Environment,
         Map
     };
-    [SerializeField] private TileBase _tb;
-    [SerializeField] private Sprite _heroSprite;
-    public static Cell[,] map = new Cell[MAP_WIDTH, MAP_HEIGHT]; 
-    public static Tilemap WalkableMap { get; private set; }
-    public const int MAP_WIDTH = 64;
-    public const int MAP_HEIGHT = 64;
     private void Start()
     {
         CreateTilemap();
         GenerateMap();
-        SpawnHero();
+        SpawnObject<Player>(RenderLevels.Entities, "Hero");
+        SpawnObject<Rat>(new(5, 5), RenderLevels.Entities, "Rat");
+        SpawnObject<Skeleton>(new(5, 6), RenderLevels.Entities, "Skeleton");
+        SpawnObject<Spider>(new(5, 7), RenderLevels.Entities, "Spider");
+        LogManager.CreateLogTargets(10);
     }
     private void CreateTilemap()
     {
@@ -48,11 +52,15 @@ public class SquareCreator : MonoBehaviour
                 WalkableMap.SetTile(new Vector3Int(x, y), _tb);
             }
     }
-    private void SpawnHero()
+    public static T SpawnObject<T>(Vector2Int position, RenderLevels renderLevel = RenderLevels.Map, string name = "NewObject") where T : Entity
     {
-        Player heroSquare = new GameObject("Hero").AddComponent<Player>();
-        heroSquare.AddComponent<SpriteRenderer>().sprite = _heroSprite;
-        heroSquare.transform.localScale = new Vector3(5, 5, 0);
-        heroSquare.transform.position = new Vector3(0, 0, (float)RenderLevels.Entities);
+        T square = new GameObject(name).AddComponent<T>();
+        square.AddComponent<SpriteRenderer>().sprite = square.Sprite;
+        square.transform.localScale = new Vector3(5, 5, 0);
+        square.transform.position = new Vector3(position.x * CELL_WIDTH, position.y * CELL_WIDTH, (float)renderLevel);
+        square.GridPosition = position; 
+        return square;
     }
+    public static T SpawnObject<T>(RenderLevels renderLevel = RenderLevels.Map, string name = "NewObject") where T : Entity
+        => SpawnObject<T>(new Vector2Int(0, 0), renderLevel, name);
 }

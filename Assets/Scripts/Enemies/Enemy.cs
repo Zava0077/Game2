@@ -11,5 +11,4 @@ public abstract class Enemy : Entity
         offset = rnd.Next(0, 4);
         Player.OnTimeStep += OnMove;
     }
-     
 }
