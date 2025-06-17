@@ -2,61 +2,120 @@ using System.Collections;
 using System;
 using UnityEngine;
 using static SquareCreator;
-
+using static MathFunctions;
+using static AnimationHelper;
+using static MovementService;
+using UnityEngine.Tilemaps;
+using static UnityEditor.PlayerSettings;
 public class Player : Entity
 {
+    public const float MOVE_CD = 0.5f;
     public static event Action OnTimeStep;
     public static event Action OnCheckTick;
     public static Camera main;
-    private const float MOVE_CD = 0.5f;
     public static Player character;
+    private static Marker _playerMarker;
     public static int TimeStep { get; private set; } = 0;
+    public override EntityType TypeOfEntity { get; protected set; }
+
     private new void Awake()
     {
         base.Awake();
         StartCoroutine(Move());
         main = Camera.main;
-        SpawnObject<Marker>(RenderLevels.Effects, "Marker");
-        OnTimeStep += () => { TimeStep++; };
+        _playerMarker = SpawnObject<Marker>(RenderLevels.Effects, "Marker");
+        OnTimeStep += () => { TimeStep++; UpdateForOfWar(5); };
+        TypeOfEntity = new ConcreteEntity(this);
     }
-    private void Start()
+    private new void Start()
     {
+        base.Start();
         character = this;
+        UpdateForOfWar(5);
     }
     private IEnumerator Move()
     {
         while(this)
         {
             yield return new WaitForSeconds(MOVE_CD);
-            OnCheckTick?.Invoke();//
-            Vector2Int inputDir = new Vector2Int(
-            (int)Input.GetAxisRaw("Horizontal"),
-            (int)Input.GetAxisRaw("Vertical"));
+            OnCheckTick?.Invoke();
             if(Input.GetMouseButton(0))
             {
-                Vector3 mouseWorldPos = main.ScreenToWorldPoint(Input.mousePosition);
-                inputDir = Vector2Int.RoundToInt(((Vector2)(mouseWorldPos - transform.position)).MaxContrast());
-            }
-            if (inputDir != Vector2Int.zero)
-            {
-                Vector2Int targetPos = GridPosition + inputDir;
-                MovementService.TryDisplace(targetPos, OnTimeStep);
-                StartCoroutine(LerpCamera(transform.position));
+                _playerMarker.Interact(this);
+                OnTimeStep?.Invoke();
+                StartCoroutine(LerpCamera(NewPos));
             }
         }
     }
-    private IEnumerator LerpCamera(Vector2 where)
+
+    private void UpdateForOfWar(int radius)
     {
-        float currentStep = 0f;
-        Vector3 dir = where - (Vector2)main.transform.position;
-        while(currentStep < MOVE_CD)
+        if (!Fog) return;
+
+        Vector2Int origin = Player.character.GridPosition;
+
+        for (int x = -radius; x <= radius; x++)
         {
-            yield return new WaitForSeconds(MOVE_CD / 5);
-            currentStep += MOVE_CD / 5;
-            main.transform.position += dir / 5;
+            for (int y = -radius; y <= radius; y++)
+            {
+                if (Mathf.Abs(x) == radius || Mathf.Abs(y) == radius)
+                {
+                    int counter = 0;
+                    Vector2Int edgeOffset = new(x, y);
+                    Vector2Int currentPos = origin;
+                    Vector2Int targetPos = origin + edgeOffset;
+
+                    while (counter < radius)
+                    {
+                        ClearFogArea(new Vector2Int(currentPos.x, currentPos.y), 1);
+                        Vector2Int direction = (targetPos - currentPos).MaxContrastInt();
+                        Vector2Int nextPos = currentPos + direction;
+
+                        if (CheckPlace(nextPos.x, nextPos.y, out int error) == null)
+                            currentPos = nextPos;
+                        else
+                            break;
+
+                        counter++;
+                    }
+                }
+            }
         }
-        yield break;
     }
+    private void ClearFogArea(Vector2Int position, int radius)
+    {
+
+        for (int x = -radius; x <= radius; x++)
+        {
+            for (int y = -radius; y <= radius; y++)
+            {
+                Vector3Int pos = new(position.x + x, position.y + y, 0);
+                Fog.SetTileFlags(pos, TileFlags.None);
+                StartCoroutine(FadeTile(pos));
+            }
+        }
+    }
+
+    private IEnumerator FadeTile(Vector3Int pos)
+    {
+        float duration = 0.25f;
+        float timer = 0f;
+        Color start = Fog.GetColor(pos);
+        Color end = start;
+        end.a = 0f;
+
+        while (timer < duration)
+        {
+            float t = timer / duration;
+            Fog.SetColor(pos, Color.Lerp(start, end, t));
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        Fog.SetTile(pos, null);
+    }
+    private IEnumerator LerpCamera(Vector2 where) =>
+        LerpAnim(main.gameObject, where, MOVE_CD, EaseInOut, main.transform.position.z);
     protected override Sprite LoadSprite() =>
         Resources.LoadAll<Sprite>("2DSprites/character and tileset")[168];
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public sealed class LogElement : MonoBehaviour
 {
     public TextMeshProUGUI textComponent;
+    public Action resetMethod;
     public enum AnimationType
     {
         Fading,
@@ -13,9 +14,8 @@ public sealed class LogElement : MonoBehaviour
         UpFade,
     }
     private readonly Dictionary<AnimationType, Func<IEnumerator>> _animations = new();
-    private RectTransform rect;
-    private Action _resetMethod;
     private string _content = string.Empty;
+    public RectTransform Rect { get; private set; }
     public bool IsAlive { get; private set; } = false;
     public string Content
     {
@@ -28,16 +28,12 @@ public sealed class LogElement : MonoBehaviour
     }
     private void Awake()
     {
-        rect = GetComponent<RectTransform>();
+        Rect = GetComponent<RectTransform>();
         _animations[AnimationType.Fading] = Fade;
         _animations[AnimationType.Wiggling] = Wiggle;
         _animations[AnimationType.UpFade] = UpFade;
     }
-    public void Die(AnimationType type)
-    {
-        _resetMethod?.Invoke();
-        StartCoroutine(Die(_animations[type]()));
-    }
+    public void Die(AnimationType type) => StartCoroutine(Die(_animations[type]()));
     private IEnumerator Die(IEnumerator anim)
     {
         IsAlive = true;
@@ -46,7 +42,7 @@ public sealed class LogElement : MonoBehaviour
     }
     private IEnumerator Fade()
     {
-        _resetMethod = () => { textComponent.alpha = 1; };
+        resetMethod = () => { textComponent.alpha = 1; };
         yield return new WaitForSeconds(1);
         while (textComponent.alpha > 0)
         {
@@ -56,35 +52,35 @@ public sealed class LogElement : MonoBehaviour
     }
     private IEnumerator UpFade()
     {
-        Vector2 startPos = rect.anchoredPosition;
-        _resetMethod = () =>
+        Vector2 startPos = Rect.anchoredPosition;
+        resetMethod = () =>
         {
             textComponent.alpha = 1;
-            rect.anchoredPosition = startPos;
+            Rect.anchoredPosition = startPos;
         };
         while (textComponent.alpha > 0)
         {
             textComponent.alpha -= Time.deltaTime;
-            rect.anchoredPosition += 20 * Time.deltaTime * Vector2.up;
+            Rect.anchoredPosition += 20 * Time.deltaTime * Vector2.up;
             yield return new WaitForEndOfFrame();
         }
     }
     private IEnumerator Wiggle() 
     {
-        Vector2 startPos = rect.anchoredPosition;
+        Vector2 startPos = Rect.anchoredPosition;
         int tickCount = 0;
         float timeElapsed = 0;
-        _resetMethod = () =>
+        resetMethod = () =>
         {
             textComponent.alpha = 1;
-            rect.anchoredPosition = startPos;
+            Rect.anchoredPosition = startPos;
         };
         while (textComponent.alpha > 0)
         {
             timeElapsed += Time.deltaTime;
             textComponent.alpha -= Time.deltaTime;
             float offset = Mathf.Sin(timeElapsed * 12) * 150 * textComponent.alpha;
-            rect.anchoredPosition += Time.deltaTime * new Vector2(offset, 0);
+            Rect.anchoredPosition += Time.deltaTime * new Vector2(offset, 0);
             tickCount++;
             yield return new WaitForEndOfFrame();
         }

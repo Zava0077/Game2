@@ -1,9 +1,7 @@
-using System;
 using UnityEngine;
 
 public class Spider : Enemy
 {
-
     public override void OnMove()
     {
         Vector2 target = Vector2.negativeInfinity;
@@ -19,8 +17,6 @@ public class Spider : Enemy
         }
         else if (distance < 6)
             target = Player.character.transform.position;
-        //else if(rnd.Next(0,100) < 25)
-        //    Player.character.Interact(this);
         else
             target = random;
         MoveTowards(target);
