@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using System;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using System.Linq;
 using static LogElement;
 using UnityEngine.Rendering;
 using NUnit.Framework.Internal;
+using TMPro;
 
 public static class LogManager
 {
@@ -59,7 +61,9 @@ public static class LogManager
             logElement = newObj.GetComponent<LogElement>();
             _freeAgents.Add(logElement);
         }
-        _chat.First().resetMethod?.Invoke();
+        //logElement.resetMethod?.Invoke();
+        logElement.StopAllCoroutines();
+        logElement.textComponent.alpha = 1;
         logElement.transform.position = position;
         logElement.Content = info;
         logElement.Die(animation);
@@ -71,7 +75,12 @@ public static class LogManager
         {
             Vector3 offset = i * TEXT_PADDING * new Vector3(0, 1, 0);
             _chat[i].transform.position = _startPosition + offset + baseOffset;
+            //_chat[i].StartCoroutine(LerpText(_chat[i].transform, _startPosition + offset + baseOffset));
         }
+    }
+    private static IEnumerator LerpText(Transform transform, Vector3 destignation)
+    {
+        yield return AnimationHelper.LerpAnim(transform.gameObject, (Vector2)destignation, Player.ANIM_DURATION, MathFunctions.EaseInOut, transform.position.z);
     }
     private static void RotateChatLog()
     {

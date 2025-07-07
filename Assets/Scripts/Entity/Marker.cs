@@ -1,15 +1,15 @@
 using AStar;
-using UnityEditor.Experimental.GraphView;
-using UnityEditorInternal;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
-using static SquareCreator;
 using static MovementService;
-using System.Diagnostics.Tracing;
-using System.Collections;
+using static SquareCreator;
+using static AStar.BackTrackingAStar;
+using System.Linq;
 public class Marker : Entity
 {
     public override EntityType TypeOfEntity { get; protected set; }
+    public override RenderLevels? RenderLevel { get; internal set; } = RenderLevels.Effects;
+    public override string Name => null;
     private new void Awake()
     {
         base.Awake();
@@ -18,14 +18,15 @@ public class Marker : Entity
     }
     public override void Interact(Entity whoInteracts)
     {
-        //if (CheckPlace(GridPosition.x, GridPosition.y, out int error) is Entity and not null
-        //    && BackTrackingAStar.CountDistance(GridPosition.x, GridPosition.y, Player.character.GridPosition.x, Player.character.GridPosition.y) == 1)
-        //    SquareCreator.map[GridPosition.x, GridPosition.y].currentEntity.Interact(whoInteracts);
-        //else
-        whoInteracts.MoveTowards(this);
+        if (CheckPlace(GridPosition.x, GridPosition.y, out int error) is not null
+            && CountDistanceDiagonally(GridPosition.x, GridPosition.y, Player.character.GridPosition.x, Player.character.GridPosition.y) == 1)
+            if (whoInteracts.CanSee(map[GridPosition.x, GridPosition.y].currentEntity))
+                map[GridPosition.x, GridPosition.y].currentEntity.Interact(whoInteracts);
+            else
+                whoInteracts.Shoot(map[GridPosition.x, GridPosition.y].currentEntity);
+        else
+            whoInteracts.MoveTowards(this);
     }
-
-
     private void OnTick()
     {
         Vector3 mouseWorldPos = Player.main.ScreenToWorldPoint(Input.mousePosition);

@@ -6,6 +6,7 @@ using static MathFunctions;
 using UnityEngine.Tilemaps;
 using static SquareCreator;
 using static AnimationHelper;
+using static TilemapHelper;
 using System;
 using System.Security.Cryptography;
 

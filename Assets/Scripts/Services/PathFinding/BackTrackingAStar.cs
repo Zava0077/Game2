@@ -8,16 +8,28 @@ namespace AStar
 {
     public sealed class BackTrackingAStar
     {
+        public static readonly Func<BackTrackingAStar, Vector2Int, bool> AvoidEverything = (pathFinder, position) =>
+        {
+            var ent = MovementService.CheckPlace(position.x, position.y, out int error);
+            if (ent != null && pathFinder._avoid.Contains(ent.GetType())) return true;
+            if (error == -1) return true;
+            return false;
+        };
         public static BackTrackingAStar GlobalInstance = new();
+        public Func<int, int, int, int, int> DistanceCounter { get; set; } = CountDistance;
+        private static Func<BackTrackingAStar, Vector2Int, bool> AvoidLogic { get; set; }
         private int? _minOptimalLength;
         private Vector2Int target;
         private HashSet<Type> _avoid;
-        public List<(int X,int Y,int,int)> GetPath(Entity seeker, Entity hidden,int? minOptimal = null, params Type[] avoid)
+        public List<(int X, int Y, int, int)> GetPath(Entity seeker, Entity hidden, Func<BackTrackingAStar, Vector2Int, bool> logic = null, int? minOptimal = null, params Type[] avoid) =>
+            GetPath(seeker.GridPosition, hidden.GridPosition, logic, minOptimal, avoid);
+        public List<(int X,int Y,int,int)> GetPath(Vector2Int seeker, Vector2Int hidden, Func<BackTrackingAStar, Vector2Int, bool> logic = null, int? minOptimal = null, params Type[] avoid)
         {
-            target = hidden.GridPosition;
+            target = hidden;
             _avoid = avoid.ToHashSet();
+            AvoidLogic = logic;
             _minOptimalLength = minOptimal;
-            List<(int, int, int, int)> list = new() { (seeker.GridPosition.x, seeker.GridPosition.y, 0, 0) };
+            List<(int, int, int, int)> list = new() { (seeker.x, seeker.y, 0, 0) };
             FindPath(list);
             return list;
         }
@@ -192,9 +204,7 @@ namespace AStar
             };
             foreach (var (X, Y) in Displaces)
             {
-                var ent = MovementService.CheckPlace(X, Y, out int error);
-                if (ent != null && _avoid.Contains(ent.GetType())) continue;
-                if (error == -1) continue;
+                if (AvoidLogic != null && AvoidLogic(this, new(X, Y))) continue;
                 AddWeigthsToPoint(X, Y, prevPos.StepsExpired + 1, listWithWeights);
             }
         }
@@ -204,13 +214,18 @@ namespace AStar
             list.Add(item);
         }
         private int CountDistance(int from_x, int from_y)
-            => CountDistance(from_x, from_y, target.x, target.y);
+            => DistanceCounter(from_x, from_y, target.x, target.y);
         public static int CountDistance(int from_x, int from_y, int to_x, int to_y)
         {
             int f_Cat = Math.Abs(to_x - from_x);
             int s_Cat = Math.Abs(to_y - from_y);
             return s_Cat + f_Cat;
-            //return Math.Max(s_Cat, f_Cat);
+        }  
+        public static int CountDistanceDiagonally(int from_x, int from_y, int to_x, int to_y)
+        {
+            int f_Cat = Math.Abs(to_x - from_x);
+            int s_Cat = Math.Abs(to_y - from_y);
+            return Math.Max(s_Cat, f_Cat);
         }
     }
 }
