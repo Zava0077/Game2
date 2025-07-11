@@ -7,6 +7,7 @@ using static AnimationHelper;
 using static AStar.BackTrackingAStar;
 using AStar;
 using static UnityEngine.EventSystems.EventTrigger;
+using System.Collections.Generic;
 public abstract class EntityType 
 {
     protected Entity _owner;
@@ -35,11 +36,12 @@ public class ConcreteEntity : EntityType
         map[_owner.GridPosition.x, _owner.GridPosition.y].currentEntity = _owner;
     }
 }
-//—оздать интерфейс наследование от которого будет даровать существу облако с текстом как в нижнем левом углу экрана.
 public abstract class Entity : MonoBehaviour //создать класс с интеллектом
 {
     public const float ANIM_DURATION = 0.15f;
+    public static readonly List<Entity> entities = new();
     public readonly System.Random rnd = new System.Random();
+    public readonly Vector2[] directions = new Vector2[] { Vector2.down, Vector2.left, Vector2.right, Vector2.up };
     public EntityStats stats = new(); 
     public readonly BackTrackingAStar _pathfinder = new()
     {
@@ -56,6 +58,7 @@ public abstract class Entity : MonoBehaviour //создать класс с интеллектом
     public Sprite Sprite => GetSprite();
     protected void Awake()
     {
+        entities.Add(this);
         MovementService = new MovementService(this);
         if (this is ILightning lighter)
             Player.OnTimeStep += () => lighter.LightUp();
@@ -92,7 +95,7 @@ public abstract class Entity : MonoBehaviour //создать класс с интеллектом
     /// Ќаправл€ет объект по клеточному полю, в сторону точки
     /// </summary>
     /// <param name="toWhere"></param>
-    protected void MoveTowards(Vector2 toWhere)
+    public void MoveTowards(Vector2 toWhere)
     {
         if (toWhere != Vector2.negativeInfinity)
         {

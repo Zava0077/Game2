@@ -52,13 +52,13 @@ public abstract class DialogNode //хуёвый пока конструктор
     }
     public virtual void React()
     {
-        if (NodeReaction == null)
-        {
-            Last = true;
-            return;
-        }
+        //if (NodeReaction == null)
+        //{
+        //    Last = true;
+        //    return;
+        //}
         NodeReaction.Invoke();
-        NodeReaction = null;
+        //NodeReaction = null;
     }
 }
 public sealed class HangingNode : DialogNode

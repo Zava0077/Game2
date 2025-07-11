@@ -11,12 +11,15 @@ public class Spider : Enemy
         Vector2 target = Vector2.negativeInfinity;
         Vector2 random = directions[rnd.Next(0, directions.Length)];
         float distance = Vector2.Distance(transform.position, Target.transform.position);
-        if (distance < 3 && (Player.TimeStep - offset) % 4 != 0)
-            target = GridPosition + (Target.transform.position - transform.position).normalized.MaxContrast() * -1; //Run
-        else if (distance < 4 && this.Shoot(Target))
-            return;
-        else if (distance < 10)
-            target = GetPath(Target).FirstOrDefault();
+        if (distance < 10)
+        {
+            if (distance < 3 && (Player.TimeStep - offset) % 4 != 0)
+                target = GridPosition + (Target.transform.position - transform.position).normalized.MaxContrast() * -1; //Run
+            else if (distance < 4 && this.Shoot(Target))
+                return;
+            else 
+                target = GetPath(Target).FirstOrDefault();
+        }
         else
             target = random;
         MoveTowards(target);

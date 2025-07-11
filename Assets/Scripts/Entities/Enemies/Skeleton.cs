@@ -11,12 +11,15 @@ public class Skeleton : Enemy //добавить монстрам класс интелекта, чтобы при пол
         Vector2 target = Vector2.negativeInfinity;
         Vector2 random = directions[rnd.Next(0, directions.Length)];
         float distance = Vector2.Distance(transform.position, Target.transform.position);
-        if (distance < 3 && (Player.TimeStep - offset) % 3 != 0)
-            target = GetPath(Target).FirstOrDefault(); //Melee
-        else if (distance < 7 && this.Shoot(Target))
-            return;
-        else if (distance < 8)
-            target = GetPath(Target).FirstOrDefault(); //Come closer
+        if(distance < 8)
+        {
+            if (distance < 3 && (Player.TimeStep - offset) % 3 != 0)
+                target = GetPath(Target).FirstOrDefault(); //Melee
+            else if (distance < 7 && this.Shoot(Target))
+                return;
+            else
+                target = GetPath(Target).FirstOrDefault(); //Come closer
+        }
         else
             target = random;
         MoveTowards(target);

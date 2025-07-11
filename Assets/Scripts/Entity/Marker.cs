@@ -31,10 +31,12 @@ public class Marker : Entity
     {
         Vector3 mouseWorldPos = Player.main.ScreenToWorldPoint(Input.mousePosition);
         Vector3Int cellPos = WalkableMap.WorldToCell(mouseWorldPos);
-        MovementService.VisualDisplace((Vector2Int) cellPos);
+        Goto((Vector2Int) cellPos);
         if (!CheckPlace(cellPos.x, cellPos.y, out int error))
             return;
     }
+    public void Goto(Vector2Int where) => MovementService.VisualDisplace(where);
+    
     protected override Sprite LoadSprite() =>
         Resources.Load<Sprite>("2DSprites/Marker");
 }

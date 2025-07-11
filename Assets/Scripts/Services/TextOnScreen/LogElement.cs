@@ -3,7 +3,7 @@ using TMPro;
 using System.Collections;
 using System;
 using System.Collections.Generic;
-public sealed class LogElement : MonoBehaviour
+public sealed class LogElement : MonoBehaviour //Добавить свойсвто NewPos, как у Entity и работать с ним аналогично
 {
     public TextMeshProUGUI textComponent;
     public Action resetMethod;

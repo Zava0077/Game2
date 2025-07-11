@@ -27,6 +27,7 @@ public class SquareCreator : MonoBehaviour
     public static FogOfWar Fog { get; private set; }
     public enum RenderLevels
     {
+        Overlay,
         Fog,
         Ambient,
         Effects,
@@ -96,10 +97,11 @@ public class SquareCreator : MonoBehaviour
             
             roomX = Mathf.Clamp(roomX, 6, MAP_WIDTH - 6);
             roomY = Mathf.Clamp(roomY, 6, MAP_HEIGHT - 6);
-            RoomType room = new System.Random().Next(3) switch
+            RoomType room = new System.Random().Next(4) switch
             {
                 0 => new RegularRoom(),
                 1 => new CircularRoom(),
+                2 => new TriangleRoom(),
                 _ => new WideRoom(),
             };
             rooms.Add(new RoomInfo(new Vector2Int(roomX, roomY), new(3, 3), room));

@@ -38,7 +38,7 @@ public class MovementService
 
     public void VisualDisplace(Vector2Int toWhere)
     {
-        _entity.NewPos = new(toWhere.x * MOVE_DISPLACEMENT, toWhere.y * MOVE_DISPLACEMENT, _entity.transform.position.z);
+        _entity.NewPos = new(toWhere.x * MOVE_DISPLACEMENT, toWhere.y * MOVE_DISPLACEMENT, (float)_entity.RenderLevel);
         _entity.StartCoroutine(AnimationHelper.LerpAnim(_entity.gameObject, _entity.NewPos
             , Entity.ANIM_DURATION, MathFunctions.ExpEaseOut, _entity.NewPos.z));
         _entity.GridPosition.x = toWhere.x;

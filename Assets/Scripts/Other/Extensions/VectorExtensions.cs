@@ -1,4 +1,5 @@
 using UnityEngine;
+using static AStar.BackTrackingAStar;
 public static class VectorExtensions
 {
     public static Vector2 MaxContrast(this Vector2 vec)
@@ -14,6 +15,7 @@ public static class VectorExtensions
         Vector2Int.RoundToInt(vec.MaxContrast());
     public static Vector2Int MaxContrastInt(this Vector2Int vec) =>
         Vector2Int.RoundToInt(MaxContrast(vec));
+    public static int DiagonalDistance(this Vector2Int vec, Vector2Int to) => CountDistanceDiagonally(vec.x,vec.y, to.x, to.y);
     public static Vector2 Rotate(this Vector2 vec, int degrees)
     {
         float radians = degrees * Mathf.Deg2Rad;

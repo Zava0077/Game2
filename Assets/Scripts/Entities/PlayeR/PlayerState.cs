@@ -2,43 +2,42 @@ using System;
 using System.Collections;
 using UnityEngine;
 using static Player;
-public abstract class PlayerState
+public abstract class EntityState<T> where T : Entity
 {
-    public PlayerState(Player actualPlayer)
-    {
-        ActualPlayer = actualPlayer;
-    }
-
-    public Player ActualPlayer { get; protected set; }
+    public T ActualEntity { get; protected set; }
+    public EntityState(T entity) => ActualEntity = entity;
     public abstract void Action();
+}
+public abstract class PlayerState : EntityState<Player>
+{
+    public PlayerState(Player actualPlayer) : base(actualPlayer) { }
 }
 public sealed class FreeRoaming : PlayerState
 {
-    public FreeRoaming(Player actualPlayer) : base(actualPlayer)
-    {
-        
-    }
-
+    public FreeRoaming(Player actualPlayer) : base(actualPlayer) { }
     public override void Action()
     {
-        ActualPlayer.InvokeOnCheckTick();
+        ActualEntity.InvokeOnCheckTick();
+        if(Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
+        {
+            ActualEntity.playerMarker.Goto(ActualEntity.GridPosition + new Vector2Int((int)Input.GetAxisRaw("Horizontal"), (int)Input.GetAxisRaw("Vertical")));
+            ActualEntity.playerMarker.Interact(ActualEntity);
+            ActualEntity.InvokeOnTimeStep();
+        }
         if (Input.GetMouseButton(0))
         {
-            ActualPlayer.playerMarker.Interact(ActualPlayer);
-            ActualPlayer.InvokeOnTimeStep();
+            ActualEntity.playerMarker.Interact(ActualEntity);
+            ActualEntity.InvokeOnTimeStep();
         }
     }
 }
 public sealed class Stunned : PlayerState
 {
-    public Stunned(Player actualPlayer) : base(actualPlayer)
-    {
-    }
-
+    public Stunned(Player actualPlayer) : base(actualPlayer) { }
     public override void Action()
     {
-        ActualPlayer.InvokeOnCheckTick();
-        ActualPlayer.InvokeOnTimeStep();
+        ActualEntity.InvokeOnCheckTick();
+        ActualEntity.InvokeOnTimeStep();
     }
 }
 

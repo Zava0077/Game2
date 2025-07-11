@@ -10,12 +10,11 @@ using UnityEngine.XR;
 using static AStar.BackTrackingAStar;
 public abstract class Enemy : Entity 
 {
-    protected readonly Vector2[] directions = new Vector2[] { Vector2.down, Vector2.up, Vector2.left, Vector2.right };
-    protected int offset;
+    public int offset;
     public Aggressiveness Agro { get; private set; }
     public Entity Target => Agro.Target;
     public override EntityType TypeOfEntity { get; protected set; }
-    protected Type[] toAvoid = new Type[] { typeof(Rat), typeof(Skeleton), typeof(Spider) };
+    protected Type[] toAvoid = new Type[] { typeof(Rat), typeof(Skeleton), typeof(Spider), typeof(ChestMimic), typeof(Chest) };
     public abstract void OnMove();
     protected new void Awake()
     {
@@ -34,6 +33,6 @@ public abstract class Enemy : Entity
         base.Interact(whoInteracts);
         Agro.UpdateValue(whoInteracts);
     } 
-    protected List<Vector2Int> GetPath(Entity target) =>
+    public List<Vector2Int> GetPath(Entity target) =>
         _pathfinder.GetPath(this, target, AvoidEverything, 8, toAvoid).Skip(1).Select(x => new Vector2Int(x.X, x.Y)).ToList();
 }

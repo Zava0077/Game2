@@ -53,7 +53,7 @@ public sealed class RegularRoom : RoomType
 }
 public sealed class CircularRoom : RoomType
 {
-    protected override (SpawnHelper, int)[] FilledWith { get; } = new (SpawnHelper, int)[] { (Converter<Torch>, 4) };
+    protected override (SpawnHelper, int)[] FilledWith { get; } = new (SpawnHelper, int)[] { (Converter<Torch>, 4), (Converter<Chest>, 1) };
     public override void Build(Tilemap map, Vector2Int where, Vector2Int size)
     {
         FillTileCircle(map, where,  size.x + 2, size.y + 2, Builder);
@@ -61,7 +61,7 @@ public sealed class CircularRoom : RoomType
 }
 public sealed class WideRoom : RoomType
 {
-    protected override (SpawnHelper, int)[] FilledWith { get; } = new (SpawnHelper, int)[] { (Converter<WoodenSign>, 1) };
+    protected override (SpawnHelper, int)[] FilledWith { get; } = new (SpawnHelper, int)[] { (Converter<WoodenSign>, 1) , (Converter<Merchant>, 1) };
 
     public override void Build(Tilemap map, Vector2Int where, Vector2Int size)
     {
@@ -70,4 +70,29 @@ public sealed class WideRoom : RoomType
         else
             FillTileArea(map, where, size.x - 1, size.y + 1, Builder);
     }
+}
+public sealed class TriangleRoom : RoomType //каллл
+{
+    protected override (SpawnHelper, int)[] FilledWith { get; } = new (SpawnHelper, int)[] { (Converter<ChestMimic>, 1) };
+
+    public override void Build(Tilemap map, Vector2Int where, Vector2Int size)
+    {
+        Vector2Int top = where;
+
+        for (int y = 0; y < size.y; y++)
+        {
+            int rowY = top.y + y;
+            int halfWidth = y;
+
+            int startX = top.x - halfWidth;
+            int endX = top.x + halfWidth;
+
+            for (int x = startX; x <= endX; x++)
+            {
+                Vector2Int tilePos = new Vector2Int(x, rowY);
+                FillTileArea(map, tilePos, 2, Builder);
+            }
+        }
+    }
+
 }
